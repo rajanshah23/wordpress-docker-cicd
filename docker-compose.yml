@@ -1,0 +1,70 @@
+# 1. Explicitly define Named Volumes (Docker manages them)
+volumes:
+  mysql_data:
+    driver: local
+  wordpress_data:
+    driver: local
+
+services:
+  mysql:
+    image: mysql:8.0.37  # ← Pinned to exact minor version
+    container_name: mysql
+    # 2. Healthcheck to ensure the DB is ready before WordPress starts
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      # 3. Uses variables from .env file  
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql  # ← Named volume for portability
+    networks:
+      - wp-network
+    restart: unless-stopped
+    # 4. Resource Limits (Prevents the container from eating all host RAM/CPU)
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  wordpress:
+    image: wordpress:6.6.1  # ← Pinned to exact version
+    container_name: wordpress
+    ports:
+      - "80:80"  # ← Bind to localhost only, Nginx handles external traffic
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+    volumes:
+      - wordpress_data:/var/www/html/wp-content
+    networks:
+      - wp-network
+    # 5. Depends on MySQL's HEALTHY status, not just "running"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 256M
+        reservations:
+          cpus: '0.3'
+          memory: 128M
+
+networks:
+  wp-network:
+    driver: bridge
+  
