@@ -1,0 +1,40 @@
+name: Deploy WordPress Stack
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+  MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
+  MYSQL_USER: ${{ secrets.MYSQL_USER }}
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Docker
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Stop old containers
+        run: docker compose down || true
+        working-directory: ./
+
+      - name: Pull latest images
+        run: docker compose pull
+        working-directory: ./
+
+      - name: Start containers
+        run: docker compose up -d
+        working-directory: ./
+
+      - name: Prune unused Docker objects
+        run: docker system prune -f
