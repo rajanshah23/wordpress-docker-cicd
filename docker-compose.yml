@@ -46,6 +46,7 @@ services:
       WORDPRESS_DB_USER: ${MYSQL_USER}
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
+      WORDPRESS_TIMEZONE: "Asia/Kathmandu" 
     volumes:
       - wordpress_data:/var/www/html/wp-content
     networks:
