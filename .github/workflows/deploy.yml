@@ -24,8 +24,10 @@ jobs:
           docker --version
           docker compose version
 
-      - name: Stop old containers
-        run: docker compose down || true
+      - name: Clean up old containers
+        run: |
+          docker stop mysql wordpress 2>/dev/null || true
+          docker rm mysql wordpress 2>/dev/null || true
         working-directory: ./
 
       - name: Pull latest images
