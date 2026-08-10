@@ -1,0 +1,18 @@
+---
+- name: Copy WordPress Helm chart to server
+  synchronize:
+    src: ../../wordpress-chart/
+    dest: /home/rajan/wordpress-chart/
+    recursive: yes
+
+- name: Deploy WordPress with Helm
+  shell: |
+    /usr/local/bin/helm upgrade --install my-wordpress /home/rajan/wordpress-chart \
+      --namespace wordpress-helm --create-namespace \
+      --set mysql.rootPassword={{ mysql_root_password }} \
+      --set mysql.password={{ mysql_password }} \
+      --set replicaCount=2
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: /home/rajan/.kube/config

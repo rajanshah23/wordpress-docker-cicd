@@ -1,0 +1,37 @@
+---
+- name: Install k3s
+  shell: curl -sfL https://get.k3s.io | sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Wait for k3s to be ready
+  shell: /usr/local/bin/kubectl  get nodes
+  register: result
+  until: result.rc == 0
+  retries: 10
+  delay: 10
+  changed_when: false
+
+- name: Create .kube directory for user
+  file:
+    path: /home/rajan/.kube
+    state: directory
+    owner: rajan
+    group: rajan
+    mode: 0755
+
+- name: Copy k3s config
+  copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /home/rajan/.kube/config
+    remote_src: yes
+    owner: rajan
+    group: rajan
+    mode: 0600
+
+- name: Install Metrics Server
+  shell: |
+    /usr/local/bin/kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    /usr/local/bin/kubectl patch deployment metrics-server -n kube-system --type=json -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+  args:
+    executable: /bin/bash

@@ -1,0 +1,11 @@
+---
+- name: Deploy Prometheus/Grafana with Helm
+  shell: |
+     /usr/local/bin/helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+      --namespace monitoring --create-namespace \
+      --set grafana.adminPassword=admin \
+      --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+  args:
+    executable: /bin/bash
+  environment:
+    KUBECONFIG: /home/rajan/.kube/config

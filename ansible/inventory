@@ -1,0 +1,2 @@
+[devops]
+devops-server ansible_connection=local ansible_become_pass=rajan

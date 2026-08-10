@@ -1,0 +1,16 @@
+---
+- name: Deploy WordPress DevOps Stack (Helm + Prometheus/Grafana)
+  hosts: devops
+  become: yes
+
+  vars:
+    mysql_root_password: "rajan1258"
+    mysql_password: "rajan1258"
+
+  roles:
+    - common
+    - docker
+    - k3s
+    - helm
+    - wordpress
+    - monitoring

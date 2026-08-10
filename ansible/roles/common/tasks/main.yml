@@ -1,0 +1,30 @@
+---
+- name: Update all packages
+  dnf:
+    name: '*'
+    state: latest
+
+- name: Install essential packages
+  dnf:
+    name:
+      - git
+      - curl
+      - wget
+      - vim
+      - net-tools
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+      - python3
+      - python3-pip
+    state: present
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Stop and disable firewalld
+  systemd:
+    name: firewalld
+    state: stopped
+    enabled: no

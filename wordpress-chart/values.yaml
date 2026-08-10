@@ -1,0 +1,48 @@
+# WordPress replica count
+replicaCount: 1
+
+# WordPress image settings
+image:
+  repository: wordpress
+  tag: 6.6.1
+  pullPolicy: IfNotPresent
+
+# MySQL settings
+mysql:
+  image: mysql:8.0.37
+  rootPassword: ""  # Must be set via --set
+  database: wordpress
+  user: wpuser
+  password: ""      # Must be set via --set
+
+# Storage settings
+persistence:
+  enabled: true
+  size: 10Gi
+  hostPath: /data/k8s-mysql
+
+# Service settings
+service:
+  type: ClusterIP
+  port: 80
+
+# Ingress settings
+ingress:
+  enabled: true
+  host: wordpress.local
+
+# Resource limits
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Horizontal Pod Autoscaler
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  cpuUtilization: 50
